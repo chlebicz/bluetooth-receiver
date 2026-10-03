@@ -1,0 +1,57 @@
+# ESP-IDF Build Directory
+build/
+
+# ESP Component Manager
+managed_components/
+# Uncomment the following line if you do not want to track component versions
+# dependencies.lock
+
+# ESP-IDF Configuration backups
+sdkconfig.old
+sdkconfig.ci.ca_dis
+sdkconfig.ci.test
+sdkconfig.defaults
+
+# VS Code settings and local workspace
+.vscode/
+
+# Cache directories
+.cache/
+
+# PlatformIO
+.pio/
+
+# Object files
+*.o
+*.obj
+*.ko
+*.objext
+
+# Executables and binaries
+*.exe
+*.out
+*.app
+*.i*86
+*.x86_64
+*.hex
+*.elf
+*.bin
+
+# Map files
+*.map
+
+# CMake generated files
+CMakeCache.txt
+CMakeFiles/
+Makefile
+cmake_install.cmake
+install_manifest.txt
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db

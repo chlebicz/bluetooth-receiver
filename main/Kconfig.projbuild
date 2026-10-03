@@ -1,0 +1,141 @@
+menu "A2DP Example Configuration"
+    config EXAMPLE_LOCAL_DEVICE_NAME
+        string "Local Device Name"
+        default "ESP_SPEAKER"
+        help
+            Use this option to set local device name.
+
+    config EXAMPLE_A2DP_SINK_USE_EXTERNAL_CODEC
+        bool "Use External Codec Instead of Internal"
+        default n
+        select BT_A2DP_USE_EXTERNAL_CODEC
+        help
+            If enable, Bluedroid stack will not decode A2DP audio data, user need to decode it in application layer.
+
+endmenu
+
+menu "A2DP Sink Internal Codec Example Configuration"
+    choice EXAMPLE_A2DP_SINK_OUTPUT
+        prompt "A2DP Sink Output"
+        default EXAMPLE_A2DP_SINK_OUTPUT_EXTERNAL_I2S
+        help
+            Select to use Internal DAC or external I2S driver
+
+        config EXAMPLE_A2DP_SINK_OUTPUT_INTERNAL_DAC
+            bool "Internal DAC"
+
+        config EXAMPLE_A2DP_SINK_OUTPUT_EXTERNAL_I2S
+            bool "External I2S Codec"
+
+        config EXAMPLE_A2DP_SINK_OUTPUT_IDLE
+            bool "Idle Output"
+
+    endchoice
+
+    config EXAMPLE_I2S_LRCK_PIN
+        int "I2S LRCK (WS) GPIO"
+        default 25
+        depends on EXAMPLE_A2DP_SINK_OUTPUT_EXTERNAL_I2S
+
+    config EXAMPLE_I2S_BCK_PIN
+        int "I2S BCK GPIO"
+        default 26
+        depends on EXAMPLE_A2DP_SINK_OUTPUT_EXTERNAL_I2S
+
+    config EXAMPLE_I2S_DATA_PIN
+        int "I2S DATA GPIO"
+        # important! for some reason, pin 19 works well (for iphone) and pin 22 works like shit
+        default 19
+        depends on EXAMPLE_A2DP_SINK_OUTPUT_EXTERNAL_I2S
+
+endmenu
+
+menu "Hardware Pins Configuration"
+
+    menu "Buttons"
+        config PIN_BUTTON_POWER
+            int "Power Button Pin"
+            default 32
+        config PIN_BUTTON_BT
+            int "Bluetooth Button Pin"
+            default 33
+    endmenu
+
+    menu "Screen SPI Pins"
+        config PIN_SCREEN_MISO
+            int "MISO Pin"
+            default -1
+        config PIN_SCREEN_MOSI
+            int "MOSI Pin"
+            default 23
+        config PIN_SCREEN_CLK
+            int "CLK Pin"
+            default 18
+        config PIN_SCREEN_CS
+            int "CS Pin"
+            default 5
+        config PIN_SCREEN_DC
+            int "DC Pin"
+            default 21
+        config PIN_SCREEN_RST
+            int "RST Pin"
+            default 22
+        config PIN_SCREEN_LED
+            int "LED Pin"
+            default 4
+    endmenu
+
+    menu "Core Audio Pins"
+        config PIN_CORE_XSMT
+            int "XSMT Pin"
+            default 15
+        config PIN_CORE_DAC_POWER
+            int "DAC Power Pin"
+            default 27
+    endmenu
+
+endmenu
+
+menu "Hardware Input Configuration"
+    config PINS_PULLUP_ENABLE
+        bool "Enable Pull-Up for Input Pins"
+        default y
+
+    config PINS_PULLDOWN_ENABLE
+        bool "Enable Pull-Down for Input Pins"
+        default n
+
+    choice PINS_INTR_TYPE
+        prompt "Interrupt Edge Type"
+        default PINS_INTR_NEGEDGE
+        config PINS_INTR_NEGEDGE
+            bool "Negative Edge"
+        config PINS_INTR_POSEDGE
+            bool "Positive Edge"
+        config PINS_INTR_ANYEDGE
+            bool "Any Edge"
+        config PINS_INTR_LOW_LEVEL
+            bool "Low Level"
+        config PINS_INTR_HIGH_LEVEL
+            bool "High Level"
+    endchoice
+
+    config PINS_WAKEUP_LEVEL
+        int "Wakeup Level (0 or 1)"
+        default 0
+endmenu
+
+menu "Display Configuration"
+    config SCREEN_LCD_H_RES
+        int "LCD Horizontal Resolution"
+        default 320
+    config SCREEN_LCD_V_RES
+        int "LCD Vertical Resolution"
+        default 240
+endmenu
+
+menu "Core Configuration"
+    config CORE_MAX_TRACKINFOUPDATE_STRLEN
+        int "Max length for Track Info Update strings"
+        default 32
+endmenu

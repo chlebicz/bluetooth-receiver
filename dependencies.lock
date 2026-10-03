@@ -1,0 +1,101 @@
+dependencies:
+  a2dp_sink_common_utils:
+    dependencies: []
+    source:
+      path: components/a2dp_utils/a2dp_sink_common_utils
+      type: local
+    version: '*'
+  a2dp_sink_int_codec_utils:
+    dependencies: []
+    source:
+      path: components/a2dp_utils/a2dp_sink_int_codec_utils
+      type: local
+    version: '*'
+  bredr_app_common_utils:
+    dependencies: []
+    source:
+      path: components/bredr_app_common_utils
+      type: local
+    version: '*'
+  bt_app_core_utils:
+    dependencies: []
+    source:
+      path: components/bt_app_core_utils
+      type: local
+    version: '*'
+  core:
+    dependencies:
+    - name: bt_app_core_utils
+      path: ../components/bt_app_core_utils
+    - name: bredr_app_common_utils
+      path: ../components/bredr_app_common_utils
+    - name: a2dp_sink_common_utils
+      path: ../components/a2dp_utils/a2dp_sink_common_utils
+    - name: a2dp_sink_int_codec_utils
+      path: ../components/a2dp_utils/a2dp_sink_int_codec_utils
+    source:
+      path: core
+      type: local
+    version: '*'
+  espressif/cmake_utilities:
+    component_hash: 351350613ceafba240b761b4ea991e0f231ac7a9f59a9ee901f751bddc0bb18f
+    dependencies:
+    - name: idf
+      require: private
+      version: '>=4.1'
+    source:
+      registry_url: https://components.espressif.com
+      type: service
+    version: 0.5.3
+  espressif/esp_lcd_ili9341:
+    component_hash: 840387ee0c90a473e43fdc75570f77c52f06423aa331d95479bde8b418c43547
+    dependencies:
+    - name: espressif/cmake_utilities
+      registry_url: https://components.espressif.com
+      require: private
+      version: 0.*
+    - name: idf
+      require: private
+      version: '>=5.2'
+    source:
+      registry_url: https://components.espressif.com/
+      type: service
+    version: 2.1.0
+  idf:
+    source:
+      type: idf
+    version: 6.0.0
+  pins:
+    dependencies: []
+    source:
+      path: pins
+      type: local
+    version: '*'
+  power:
+    dependencies:
+    - name: core
+      path: ../core
+    - name: screen
+      path: ../screen
+    source:
+      path: power
+      type: local
+    version: '*'
+  screen:
+    dependencies:
+    - name: idf
+      version: '>=4.1.0'
+    - name: espressif/esp_lcd_ili9341
+      version: '*'
+    source:
+      path: screen
+      type: local
+    version: '*'
+direct_dependencies:
+- core
+- pins
+- power
+- screen
+manifest_hash: 316ee52611738c2102cce9d094887ef5b1d65aa08c19c7db09275a463a8aff70
+target: esp32
+version: 3.0.0

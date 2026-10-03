@@ -1,0 +1,5 @@
+dependencies:
+  core:
+    path: ../core
+  screen:
+    path: ../screen

@@ -1,0 +1,10 @@
+dependencies:
+  # from ESP-IDF examples
+  bt_app_core_utils:
+    path: ../components/bt_app_core_utils
+  bredr_app_common_utils:
+    path: ../components/bredr_app_common_utils
+  a2dp_sink_common_utils:
+    path: ../components/a2dp_utils/a2dp_sink_common_utils
+  a2dp_sink_int_codec_utils:
+    path: ../components/a2dp_utils/a2dp_sink_int_codec_utils
