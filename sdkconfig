@@ -721,6 +721,85 @@ CONFIG_EXAMPLE_I2S_DATA_PIN=19
 # end of A2DP Sink Internal Codec Example Configuration
 
 #
+# Hardware Pins Configuration
+#
+
+#
+# Buttons
+#
+# default:
+CONFIG_PIN_BUTTON_POWER=32
+# default:
+CONFIG_PIN_BUTTON_BT=33
+# end of Buttons
+
+#
+# Screen SPI Pins
+#
+# default:
+CONFIG_PIN_SCREEN_MISO=-1
+# default:
+CONFIG_PIN_SCREEN_MOSI=23
+# default:
+CONFIG_PIN_SCREEN_CLK=18
+# default:
+CONFIG_PIN_SCREEN_CS=5
+# default:
+CONFIG_PIN_SCREEN_DC=21
+# default:
+CONFIG_PIN_SCREEN_RST=22
+# default:
+CONFIG_PIN_SCREEN_LED=4
+# end of Screen SPI Pins
+
+#
+# Core Audio Pins
+#
+# default:
+CONFIG_PIN_CORE_XSMT=15
+# default:
+CONFIG_PIN_CORE_DAC_POWER=27
+# end of Core Audio Pins
+# end of Hardware Pins Configuration
+
+#
+# Hardware Input Configuration
+#
+# default:
+CONFIG_PINS_PULLUP_ENABLE=y
+# default:
+# CONFIG_PINS_PULLDOWN_ENABLE is not set
+# default:
+CONFIG_PINS_INTR_NEGEDGE=y
+# default:
+# CONFIG_PINS_INTR_POSEDGE is not set
+# default:
+# CONFIG_PINS_INTR_ANYEDGE is not set
+# default:
+# CONFIG_PINS_INTR_LOW_LEVEL is not set
+# default:
+# CONFIG_PINS_INTR_HIGH_LEVEL is not set
+# default:
+CONFIG_PINS_WAKEUP_LEVEL=0
+# end of Hardware Input Configuration
+
+#
+# Display Configuration
+#
+# default:
+CONFIG_SCREEN_LCD_H_RES=320
+# default:
+CONFIG_SCREEN_LCD_V_RES=240
+# end of Display Configuration
+
+#
+# Core Configuration
+#
+# default:
+CONFIG_CORE_MAX_TRACKINFOUPDATE_STRLEN=32
+# end of Core Configuration
+
+#
 # BR/EDR App Common Example Configuration
 #
 # default:
