@@ -123,8 +123,10 @@ void bt_app_gap_cb(
       sizeof(esp_bd_addr_t)
     );
     if (hdl->a2dp_watchdog_timer && is_device_bonded(hdl->current_acl_bda)) {
-      ESP_LOGI("BT_GAP", "Device is bonded. Starting 5s diagnostic watchdog.");
-      xTimerStart(hdl->a2dp_watchdog_timer, 0);
+      if (!hdl->is_a2dp_connected) {
+        ESP_LOGI("BT_GAP", "Device is bonded. Starting 5s diagnostic watchdog.");
+        xTimerStart(hdl->a2dp_watchdog_timer, 0);
+      }
     } else {
       ESP_LOGI("BT_GAP", "Device is NOT bonded (first pairing). Waiting patiently.");
     }

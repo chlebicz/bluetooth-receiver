@@ -6,7 +6,7 @@
 
 static uint16_t* allocate_pooled_dma_buffer(size_t size)
 {
-  #define BIG_CHAR_POOL_SIZE 8
+  #define BIG_CHAR_POOL_SIZE 16
   static uint16_t *dma_pool[BIG_CHAR_POOL_SIZE] = {NULL};
   static size_t dma_pool_sizes[BIG_CHAR_POOL_SIZE] = {0};
   static int pool_idx = 0;
@@ -70,6 +70,8 @@ static inline void draw_zoomed_char(
   uint16_t color
 )
 {
+  if (c >= 128) c = '?';
+
   for (int row = 0; row < GLYPH_HEIGHT; row++)
   {
     uint8_t line = font8x8_basic[c][row];

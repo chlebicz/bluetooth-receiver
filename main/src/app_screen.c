@@ -5,6 +5,7 @@
 #include <string.h>
 #include "esp_log.h"
 #include "screen/font8x8.h"
+#include "screen/polish.h"
 
 typedef struct
 {
@@ -16,7 +17,12 @@ typedef struct
 static void app_screen_handle_trackinfoupdate(trackinfoupdate_t update, void *data)
 {
   app_screen_handle_t *hdl = (app_screen_handle_t *)data;
-  size_t len = strlen((const char *)update.value);
+
+  char* safe_value = strdup((const char*)update.value);
+  if (safe_value) replace_polish_characters((uint8_t*)safe_value);
+  const char* str_to_draw = safe_value ? safe_value : (const char*)update.value;
+
+  size_t len = strlen(str_to_draw);
   const char* spaces = "                    ";
 
   const uint8_t zoom = 2;
@@ -41,7 +47,7 @@ static void app_screen_handle_trackinfoupdate(trackinfoupdate_t update, void *da
     );
     hdl->display_api->draw_horizontal_text(
       hdl->display,
-      (const char *)update.value,
+      str_to_draw,
       len,
       0,
       32,
@@ -65,7 +71,7 @@ static void app_screen_handle_trackinfoupdate(trackinfoupdate_t update, void *da
     );
     hdl->display_api->draw_horizontal_text(
       hdl->display,
-      (const char*)update.value,
+      str_to_draw,
       len,
       0,
       16,
@@ -74,6 +80,8 @@ static void app_screen_handle_trackinfoupdate(trackinfoupdate_t update, void *da
       zoom
     );
   }
+
+  if (safe_value) free(safe_value);
 }
 
 void app_screen_init(

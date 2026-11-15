@@ -13,6 +13,8 @@ struct power_handle
   display_handle_t *display;
 
   esp_timer_handle_t timer_handle;
+  int is_connected;
+  int is_playing;
 };
 
 void power_on(power_handle_t *hdl)
@@ -62,11 +64,9 @@ static void start_shutdown_timer(power_handle_t *hdl)
   ESP_ERROR_CHECK(esp_timer_start_once(hdl->timer_handle, timeout_us));
 }
 
-static void handle_audio_state_update(core_audio_state_t state, void *args)
+static void update_timer_state(power_handle_t *hdl)
 {
-  power_handle_t *hdl = (power_handle_t *)args;
-
-  if (state == CORE_AUDIO_STATE_PLAYING)
+  if (hdl->is_connected && hdl->is_playing)
   {
     timer_stop(hdl);
   }
@@ -76,21 +76,21 @@ static void handle_audio_state_update(core_audio_state_t state, void *args)
   }
 }
 
+static void handle_audio_state_update(core_audio_state_t state, void *args)
+{
+  power_handle_t *hdl = (power_handle_t *)args;
+  hdl->is_playing = (state == CORE_AUDIO_STATE_PLAYING);
+  update_timer_state(hdl);
+}
+
 static void handle_connection_state_update(
   core_connection_state_t state,
   void *args
 )
 {
   power_handle_t *hdl = (power_handle_t *)args;
-
-  if (state == CORE_CONNECTION_STATE_CONNECTED)
-  {
-    timer_stop(hdl);
-  }
-  else
-  {
-    start_shutdown_timer(hdl);
-  }
+  hdl->is_connected = (state == CORE_CONNECTION_STATE_CONNECTED);
+  update_timer_state(hdl);
 }
 
 power_handle_t *power_init(
@@ -106,6 +106,8 @@ power_handle_t *power_init(
 
   hdl->display = display;
   hdl->timer_handle = NULL;
+  hdl->is_connected = 0;
+  hdl->is_playing = 0;
 
   core_api->add_audio_state_change_cb(handle_audio_state_update, hdl);
   core_api->add_connection_state_change_cb(
