@@ -85,23 +85,28 @@ display_handle_t display_init(void)
 
   ESP_ERROR_CHECK(esp_lcd_panel_reset(panel_handle));
   ESP_ERROR_CHECK(esp_lcd_panel_init(panel_handle));
+  ESP_LOGI(TAG, "ILI9341 panel reset and initialized");
 
   // Turn the display on
   ESP_ERROR_CHECK(esp_lcd_panel_disp_on_off(panel_handle, true));
+  ESP_LOGI(TAG, "Display turned on");
 
   // Landscape mode
   ESP_ERROR_CHECK(esp_lcd_panel_swap_xy(panel_handle, true));
   ESP_ERROR_CHECK(esp_lcd_panel_mirror(panel_handle, true, true));
+  ESP_LOGI(TAG, "Display orientation configured for landscape mode");
 
   ESP_LOGI(TAG, "Turn on backlight");
   gpio_set_direction(PIN_NUM_LED, GPIO_MODE_OUTPUT);
   gpio_set_level(PIN_NUM_LED, 1);
 
+  ESP_LOGI(TAG, "Display initialization complete");
   return hdl;
 }
 
 void display_start(display_handle_t hdl)
 {
+  ESP_LOGI(TAG, "Waking up display (Sleep Out) and enabling backlight");
   ESP_ERROR_CHECK(esp_lcd_panel_io_tx_param(hdl->io_handle, 0x11, NULL, 0)); // Sleep Out
   // vTaskDelay(pdMS_TO_TICKS(120));
   gpio_set_level(PIN_NUM_LED, 1);
@@ -109,6 +114,7 @@ void display_start(display_handle_t hdl)
 
 void display_sleep(display_handle_t hdl)
 {
+  ESP_LOGI(TAG, "Putting display to sleep (Sleep In) and disabling backlight");
   gpio_set_level(PIN_NUM_LED, 0);
   ESP_ERROR_CHECK(esp_lcd_panel_io_tx_param(hdl->io_handle, 0x10, NULL, 0)); // Sleep In
 }

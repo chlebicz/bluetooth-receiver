@@ -7,6 +7,8 @@
 #include "screen/font8x8.h"
 #include "screen/polish.h"
 
+static const char *TAG = "APP_SCREEN";
+
 typedef struct
 {
   const core_api_t    *core_api;
@@ -17,6 +19,7 @@ typedef struct
 static void app_screen_handle_trackinfoupdate(trackinfoupdate_t update, void *data)
 {
   app_screen_handle_t *hdl = (app_screen_handle_t *)data;
+  ESP_LOGI(TAG, "Received track info update: type=%d", update.type);
 
   char* safe_value = strdup((const char*)update.value);
   if (safe_value) replace_polish_characters((uint8_t*)safe_value);
@@ -29,12 +32,13 @@ static void app_screen_handle_trackinfoupdate(trackinfoupdate_t update, void *da
   const size_t max_chars_in_line = LCD_H_RES / (zoom * GLYPH_SIZE);
   if (len > max_chars_in_line)
   {
+    ESP_LOGI(TAG, "Truncating text length from %u to %u chars", (unsigned)len, (unsigned)max_chars_in_line);
     len = max_chars_in_line;
   }
 
   if (update.type == TRACKINFOUPDATE_ARTIST)
   {
-    ESP_LOGI("screencore", "artist: %s", update.value);
+    ESP_LOGI(TAG, "Drawing artist: %s", str_to_draw);
     hdl->display_api->draw_horizontal_text(
       hdl->display,
       spaces,
@@ -58,7 +62,7 @@ static void app_screen_handle_trackinfoupdate(trackinfoupdate_t update, void *da
   }
   else if (update.type == TRACKINFOUPDATE_TITLE)
   {
-    ESP_LOGI("screencore", "title: %s", update.value);
+    ESP_LOGI(TAG, "Drawing title: %s", str_to_draw);
     hdl->display_api->draw_horizontal_text(
       hdl->display,
       spaces,
@@ -80,6 +84,10 @@ static void app_screen_handle_trackinfoupdate(trackinfoupdate_t update, void *da
       zoom
     );
   }
+  else
+  {
+    ESP_LOGI(TAG, "Ignoring unhandled track info update type: %d", update.type);
+  }
 
   if (safe_value) free(safe_value);
 }
@@ -90,9 +98,11 @@ void app_screen_init(
   display_handle_t display_handle
 )
 {
+  ESP_LOGI(TAG, "Initializing app screen");
   app_screen_handle_t *hdl = malloc(sizeof(app_screen_handle_t));
   if (!hdl)
   {
+    ESP_LOGE(TAG, "Failed to allocate app_screen_handle_t");
     return;
   }
 
@@ -100,9 +110,11 @@ void app_screen_init(
   hdl->display_api = display_api;
   hdl->display     = display_handle;
 
+  ESP_LOGI(TAG, "Registering track info update callback");
   core_api->add_trackinfoupdate_cb(app_screen_handle_trackinfoupdate, hdl);
 
   char first_line[] = "Now playing:";
+  ESP_LOGI(TAG, "Drawing initial header text: '%s'", first_line);
   display_api->draw_horizontal_text(
     display_handle,
     (const char *)first_line,

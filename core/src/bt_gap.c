@@ -8,6 +8,7 @@ void bt_app_dev_cb(
   esp_bt_dev_cb_event_t event, esp_bt_dev_cb_param_t *param
 )
 {
+  ESP_LOGI("BT_DEV", "BT device callback event: %d", event);
   bredr_app_dev_evt_def_hdl(event, param);
 }
 
@@ -23,9 +24,11 @@ void a2dp_watchdog_cb(TimerHandle_t xTimer)
   if (nvs_open("storage", NVS_READWRITE, &nvs_hdl) == ESP_OK) {
     uint8_t wd_restarts = 0;
     nvs_get_u8(nvs_hdl, "wd_restarts", &wd_restarts);
+    ESP_LOGI("BT_WATCHDOG", "Current wd_restarts=%u", wd_restarts);
     
     if (wd_restarts < 2) {
       wd_restarts++;
+      ESP_LOGI("BT_WATCHDOG", "Incrementing wd_restarts to %u and saving ACL MAC before restart", wd_restarts);
       nvs_set_u8(nvs_hdl, "wd_restarts", wd_restarts);
       nvs_set_blob(nvs_hdl, "last_mac", hdl->current_acl_bda, 
                    sizeof(esp_bd_addr_t));
@@ -83,20 +86,23 @@ void bt_app_gap_cb(
 )
 {
   core_handle_t hdl = get_core_handle();
+  ESP_LOGI("BT_GAP", "GAP callback event: %d", event);
   switch (event) {
   // this event triggers when the remote name has been successfully fetched
   case ESP_BT_GAP_READ_REMOTE_NAME_EVT:
   {
     if (param->read_rmt_name.stat == ESP_BT_STATUS_SUCCESS)
     {
-      // ESP_LOGI("BT_GAP", ">>> Connected Device Name: %s <<<", param->read_rmt_name.rmt_name);
+      ESP_LOGI("BT_GAP", ">>> Connected Device Name: %s <<<", param->read_rmt_name.rmt_name);
     } else {
-      ESP_LOGW("BT_GAP", "Failed to read remote device name");
+      ESP_LOGW("BT_GAP", "Failed to read remote device name (stat=%d)", param->read_rmt_name.stat);
     }
     break;
   }
   case ESP_BT_GAP_AUTH_CMPL_EVT:
   {
+    ESP_LOGI("BT_GAP", "Authentication complete: stat=%d, device=%s",
+             param->auth_cmpl.stat, param->auth_cmpl.device_name);
     if (param->auth_cmpl.stat != ESP_BT_STATUS_SUCCESS) {
       ESP_LOGE("BT_GAP", "Authentication failed! Removing bond.");
       esp_bt_gap_remove_bond_device(param->auth_cmpl.bda);
@@ -108,6 +114,11 @@ void bt_app_gap_cb(
   }
   case ESP_BT_GAP_ACL_CONN_CMPL_STAT_EVT:
   {
+    ESP_LOGI("BT_GAP", "ACL connection complete: stat=%d, bda=%02x:%02x:%02x:%02x:%02x:%02x",
+             param->acl_conn_cmpl_stat.stat,
+             param->acl_conn_cmpl_stat.bda[0], param->acl_conn_cmpl_stat.bda[1],
+             param->acl_conn_cmpl_stat.bda[2], param->acl_conn_cmpl_stat.bda[3],
+             param->acl_conn_cmpl_stat.bda[4], param->acl_conn_cmpl_stat.bda[5]);
     bredr_app_gap_evt_def_hdl(event, param);
     // DON'T set NON_CONNECTABLE here — this fires when the raw ACL link
     // establishes, BEFORE A2DP has a chance to connect on top of it.
@@ -126,6 +137,8 @@ void bt_app_gap_cb(
       if (!hdl->is_a2dp_connected) {
         ESP_LOGI("BT_GAP", "Device is bonded. Starting 5s diagnostic watchdog.");
         xTimerStart(hdl->a2dp_watchdog_timer, 0);
+      } else {
+        ESP_LOGI("BT_GAP", "Device is bonded, but A2DP is already connected. Ignoring watchdog.");
       }
     } else {
       ESP_LOGI("BT_GAP", "Device is NOT bonded (first pairing). Waiting patiently.");
@@ -134,7 +147,8 @@ void bt_app_gap_cb(
   }
   case ESP_BT_GAP_ACL_DISCONN_CMPL_STAT_EVT:
   {
-    ESP_LOGI("BT_GAP", "Radio link fully severed. Safe to open doors.");
+    ESP_LOGI("BT_GAP", "Radio link fully severed (reason=0x%x). Safe to open doors.",
+             param->acl_disconn_cmpl_stat.reason);
     if (hdl->a2dp_watchdog_timer) {
       xTimerStop(hdl->a2dp_watchdog_timer, 0);
     }
@@ -150,6 +164,7 @@ void bt_app_gap_cb(
     break;
   }
   default:
+    ESP_LOGI("BT_GAP", "Forwarding GAP event %d to default handler", event);
     bredr_app_gap_evt_def_hdl(event, param);
     break;
   }

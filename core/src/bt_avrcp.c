@@ -10,6 +10,7 @@ void send_media_command(uint8_t command) {
     return;
   }
 
+  ESP_LOGI("BT_CTRL", "Sending AVRCP passthrough command: 0x%02x", command);
   // send button pressed
   hdl->avrc_tl++;
   hdl->avrc_tl &= 0x0F;
@@ -43,6 +44,9 @@ void handle_track_info_update(
     );
   }
 
+  ESP_LOGI("BT_AVRCP", "Dispatching track info update: type=%d, value='%s'",
+           type, (const char *)update.value);
+
   for (int i = 0; i < CORE_MAX_TRACKINFOUPDATE_CBS; ++i)
   {
     if (hdl->track_info_update_cbs[i] == NULL)
@@ -59,7 +63,7 @@ void bt_app_avrc_ct_cb(
 )
 {
   core_handle_t hdl = get_core_handle();
-  //ESP_LOGI("AVRCP_DEBUG", "AVRCP Callback Fired! Event ID: %d", event);
+  ESP_LOGI("BT_AVRCP", "AVRCP Callback Fired! Event ID: %d", event);
 
   uint32_t attr_mask = ESP_AVRC_MD_ATTR_TITLE | 
                        ESP_AVRC_MD_ATTR_ARTIST | 
@@ -69,8 +73,10 @@ void bt_app_avrc_ct_cb(
   {
     case ESP_AVRC_CT_CONNECTION_STATE_EVT:
     {
+      ESP_LOGI("BT_AVRCP", "AVRCP connection state changed: connected=%d", param->conn_stat.connected);
       if (param->conn_stat.connected) {
         // ask for the metadata of whatever is currently playing
+        ESP_LOGI("BT_AVRCP", "Requesting initial track metadata and subscribing to track change notifications");
         hdl->avrc_tl++;
         hdl->avrc_tl &= 0x0F;
         esp_avrc_ct_send_metadata_cmd(hdl->avrc_tl, attr_mask);
@@ -86,8 +92,10 @@ void bt_app_avrc_ct_cb(
     }
     case ESP_AVRC_CT_CHANGE_NOTIFY_EVT:
     {
+      ESP_LOGI("BT_AVRCP", "AVRCP change notification: event_id=%d", param->change_ntf.event_id);
       if (param->change_ntf.event_id == ESP_AVRC_RN_TRACK_CHANGE)
       {
+        ESP_LOGI("BT_AVRCP", "Track changed, requesting metadata and re-subscribing");
         // ask for the new track's metadata
         hdl->avrc_tl++;
         hdl->avrc_tl &= 0x0F;
@@ -103,6 +111,7 @@ void bt_app_avrc_ct_cb(
       else if (param->change_ntf.event_id == ESP_AVRC_RN_PLAY_STATUS_CHANGE)
       {
         uint8_t playback_status = param->change_ntf.event_parameter.playback;
+        ESP_LOGI("BT_AVRCP", "Playback status changed: %d", playback_status);
 
         if (playback_status == ESP_AVRC_PLAYBACK_PLAYING)
         {
@@ -121,11 +130,17 @@ void bt_app_avrc_ct_cb(
       uint8_t *attr_text = (uint8_t *)malloc(param->meta_rsp.attr_length + 1);
       if (!attr_text)
       {
+        ESP_LOGE("BT_AVRCP", "Failed to allocate memory for metadata response");
         break;
       }
       
       memcpy(attr_text, param->meta_rsp.attr_text, param->meta_rsp.attr_length);
       attr_text[param->meta_rsp.attr_length] = 0;
+
+      ESP_LOGI("BT_AVRCP", "Metadata response: attr_id=0x%lx, len=%d, text='%s'",
+               (unsigned long)param->meta_rsp.attr_id,
+               param->meta_rsp.attr_length,
+               (const char *)attr_text);
 
       switch (param->meta_rsp.attr_id)
       {
@@ -141,6 +156,7 @@ void bt_app_avrc_ct_cb(
     }
 
     default:
+      ESP_LOGI("BT_AVRCP", "Unhandled AVRCP event: %d", event);
       break;
   }
 }

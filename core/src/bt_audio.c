@@ -1,17 +1,29 @@
 #include "bt_internal.h"
 #include "a2dp_sink_int_codec_utils.h"
+#include "esp_log.h"
 #include "esp_system.h"
+
+static const char *TAG = "BT_AUDIO";
 
 void bt_app_a2d_data_cb(const uint8_t *data, uint32_t len)
 {
   static int16_t processed_audio[2048]; // Max A2DP frame is usually around 1024-2048 bytes
-  
+  static uint32_t packet_count = 0;
+
   if (unlikely(len > sizeof(processed_audio))) {
     // Fallback if the packet is unexpectedly large
+    ESP_LOGI(TAG, "Dropping oversized audio packet: %lu bytes (max %u)",
+             (unsigned long)len, (unsigned)sizeof(processed_audio));
 
     // bt_a2d_data_hdl(data, len);
     return;
   }
+
+  if (packet_count == 0 || (packet_count % 500) == 0) {
+    ESP_LOGI(TAG, "Processing A2DP audio packet #%lu (%lu bytes)",
+             (unsigned long)packet_count, (unsigned long)len);
+  }
+  packet_count++;
   
   int16_t *pcm_data = (int16_t *)data;
   uint32_t num_samples = len / sizeof(int16_t);

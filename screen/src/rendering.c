@@ -1,8 +1,11 @@
 #include "screen/rendering.h"
 #include <stdint.h>
 #include "esp_heap_caps.h"
+#include "esp_log.h"
 #include "screen/font8x8.h"
 #include "display_handle.h"
+
+static const char *TAG = "RENDERING";
 
 static uint16_t* allocate_pooled_dma_buffer(size_t size)
 {
@@ -13,6 +16,8 @@ static uint16_t* allocate_pooled_dma_buffer(size_t size)
 
   if (dma_pool[pool_idx] != NULL && dma_pool_sizes[pool_idx] < size)
   {
+    ESP_LOGI(TAG, "Reallocating DMA pool slot %d (%u -> %u bytes)",
+             pool_idx, (unsigned)dma_pool_sizes[pool_idx], (unsigned)size);
     heap_caps_free(dma_pool[pool_idx]);
     dma_pool[pool_idx] = NULL;
   }
@@ -22,11 +27,13 @@ static uint16_t* allocate_pooled_dma_buffer(size_t size)
     uint16_t *buffer = heap_caps_malloc(size, MALLOC_CAP_DMA);
     if (buffer != NULL)
     {
+      ESP_LOGI(TAG, "Allocated DMA pool slot %d (%u bytes)", pool_idx, (unsigned)size);
       dma_pool[pool_idx] = buffer;
       dma_pool_sizes[pool_idx] = size;
     }
     else
     {
+      ESP_LOGE(TAG, "Failed to allocate %u bytes in DMA pool slot %d", (unsigned)size, pool_idx);
       return NULL;
     }
   }
@@ -148,9 +155,11 @@ void draw_horizontal_text(
 {
   if (zoom == 0)
   {
+    ESP_LOGI(TAG, "Skipping draw_horizontal_text: zoom=0");
     return;
   }
 
+  ESP_LOGI(TAG, "Drawing horizontal text (len=%d, x=%d, y=%d, zoom=%u)", length, x, y, zoom);
   for (int i = 0; i < length; i++)
   {
     draw_char(
@@ -175,11 +184,15 @@ static uint16_t* prepare_band_buffer(int width, int height, uint16_t bg_color)
   {
     if (band_buffer != NULL)
     {
+      ESP_LOGI(TAG, "Freeing previous band buffer (%dx%d)", allocated_width, allocated_height);
       heap_caps_free(band_buffer);
     }
+    ESP_LOGI(TAG, "Allocating band buffer (%dx%d, %u bytes)",
+             width, height, (unsigned)(width * height * sizeof(uint16_t)));
     band_buffer = heap_caps_malloc(width * height * sizeof(uint16_t), MALLOC_CAP_DMA);
     if (band_buffer == NULL)
     {
+      ESP_LOGE(TAG, "Failed to allocate band buffer (%dx%d)", width, height);
       return NULL;
     }
     
@@ -211,9 +224,11 @@ void draw_text_band(
 
   if (zoom == 0)
   {
+    ESP_LOGI(TAG, "Skipping draw_text_band: zoom=0");
     return;
   }
 
+  ESP_LOGI(TAG, "Drawing text band (len=%d, scroll_x=%d, y=%d, zoom=%u)", length, scroll_x, y, zoom);
   int band_width = LCD_H_RES;
   int band_height = GLYPH_HEIGHT * zoom;
 
@@ -241,6 +256,7 @@ void draw_text_band(
 
 void clear_screen(display_handle_t hdl, uint16_t color)
 {
+  ESP_LOGI(TAG, "Clearing screen with color 0x%04x (%dx%d)", color, LCD_H_RES, LCD_V_RES);
   esp_lcd_panel_handle_t panel = hdl->panel_handle;
 
   const int CHUNK_LINES = 20;
@@ -268,4 +284,5 @@ void clear_screen(display_handle_t hdl, uint16_t color)
     
     esp_lcd_panel_draw_bitmap(panel, 0, y, LCD_H_RES, y_end, chunk_buffer);
   }
+  ESP_LOGI(TAG, "Screen cleared");
 }

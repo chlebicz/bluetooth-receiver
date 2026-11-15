@@ -14,10 +14,16 @@ void handle_audio_state_change(
   if (a2d_state == ESP_A2D_AUDIO_STATE_STARTED)
   {
     state = CORE_AUDIO_STATE_PLAYING;
+    ESP_LOGI("BT_AV", "Audio state changed to PLAYING");
   }
   else if (a2d_state == ESP_A2D_AUDIO_STATE_SUSPEND)
   {
     state = CORE_AUDIO_STATE_PAUSED;
+    ESP_LOGI("BT_AV", "Audio state changed to PAUSED/SUSPENDED");
+  }
+  else
+  {
+    ESP_LOGI("BT_AV", "Audio state changed: raw=%d", a2d_state);
   }
 
   for (int i = 0; i < CORE_MAX_AUDIO_STATE_CBS; ++i)
@@ -41,10 +47,12 @@ void handle_connection_state_change(
   if (a2d_state == ESP_A2D_CONNECTION_STATE_CONNECTED)
   {
     state = CORE_CONNECTION_STATE_CONNECTED;
+    ESP_LOGI("BT_AV", "Notifying listeners: connection state CONNECTED");
   }
   else if (a2d_state == ESP_A2D_CONNECTION_STATE_DISCONNECTED)
   {
     state = CORE_CONNECTION_STATE_DISCONNECTED;
+    ESP_LOGI("BT_AV", "Notifying listeners: connection state DISCONNECTED");
   }
   else
   {
@@ -66,9 +74,11 @@ void handle_connection_state_change(
 void bt_app_a2d_cb(esp_a2d_cb_event_t event, esp_a2d_cb_param_t *param)
 {
   core_handle_t hdl = get_core_handle();
+  ESP_LOGI("BT_AV", "A2DP callback event: %d", event);
   switch (event)
   {
   case ESP_A2D_PROF_STATE_EVT:
+    ESP_LOGI("BT_AV", "A2DP profile state event: init_state=%d", param->a2d_prof_stat.init_state);
     if (param->a2d_prof_stat.init_state == ESP_A2D_INIT_SUCCESS) {
       ESP_LOGI("BT_AV", "A2DP Profile Ready! Opening for connections...");
       esp_bt_gap_set_scan_mode(ESP_BT_CONNECTABLE, ESP_BT_GENERAL_DISCOVERABLE);
@@ -81,6 +91,7 @@ void bt_app_a2d_cb(esp_a2d_cb_event_t event, esp_a2d_cb_param_t *param)
   case ESP_A2D_SNK_SET_DELAY_VALUE_EVT:
   case ESP_A2D_SNK_GET_DELAY_VALUE_EVT:
   {
+    ESP_LOGI("BT_AV", "A2DP sink config/delay event: %d", event);
     bt_app_work_dispatch(
       bt_a2d_evt_def_hdl, event, param, sizeof(esp_a2d_cb_param_t), NULL
     );
@@ -89,6 +100,11 @@ void bt_app_a2d_cb(esp_a2d_cb_event_t event, esp_a2d_cb_param_t *param)
 
   case ESP_A2D_CONNECTION_STATE_EVT:
   {
+    ESP_LOGI("BT_AV", "A2DP connection state event: state=%d, remote_bda=%02x:%02x:%02x:%02x:%02x:%02x",
+             param->conn_stat.state,
+             param->conn_stat.remote_bda[0], param->conn_stat.remote_bda[1],
+             param->conn_stat.remote_bda[2], param->conn_stat.remote_bda[3],
+             param->conn_stat.remote_bda[4], param->conn_stat.remote_bda[5]);
     bt_app_work_dispatch(
       bt_a2d_evt_int_codec_hdl, event, param, sizeof(esp_a2d_cb_param_t), NULL
     );
@@ -96,6 +112,7 @@ void bt_app_a2d_cb(esp_a2d_cb_event_t event, esp_a2d_cb_param_t *param)
     if (param->conn_stat.state == ESP_A2D_CONNECTION_STATE_CONNECTED)
     {
       if (hdl->a2dp_watchdog_timer) {
+        ESP_LOGI("BT_AV", "Stopping A2DP watchdog timer");
         xTimerStop(hdl->a2dp_watchdog_timer, 0);
       }
       ESP_LOGI("BT_AV", "Device Connected! Saving MAC to NVS...");
@@ -112,13 +129,16 @@ void bt_app_a2d_cb(esp_a2d_cb_event_t event, esp_a2d_cb_param_t *param)
         nvs_set_u8(my_handle, "wd_restarts", 0);
         nvs_commit(my_handle);
         nvs_close(my_handle);
+        ESP_LOGI("BT_AV", "Saved peer MAC and reset wd_restarts in NVS");
       }
 
+      ESP_LOGI("BT_AV", "Requesting remote device name");
       esp_bt_gap_read_remote_name(param->conn_stat.remote_bda);
       handle_connection_state_change(param->conn_stat.state);
     }
     else if (param->conn_stat.state == ESP_A2D_CONNECTION_STATE_CONNECTING)
     {
+      ESP_LOGI("BT_AV", "A2DP connecting...");
       hdl->is_a2dp_connecting = 1;
     }
     else if (param->conn_stat.state == ESP_A2D_CONNECTION_STATE_DISCONNECTED)
@@ -130,6 +150,7 @@ void bt_app_a2d_cb(esp_a2d_cb_event_t event, esp_a2d_cb_param_t *param)
     }
     else if (param->conn_stat.state == ESP_A2D_CONNECTION_STATE_ERROR)
     {
+      ESP_LOGI("BT_AV", "A2DP connection error event received");
       // if (a2dp_watchdog_timer) {
       //     xTimerStop(a2dp_watchdog_timer, 0);
       // }
@@ -139,6 +160,7 @@ void bt_app_a2d_cb(esp_a2d_cb_event_t event, esp_a2d_cb_param_t *param)
   }
   case ESP_A2D_AUDIO_STATE_EVT:
   {
+    ESP_LOGI("BT_AV", "A2DP audio state event: state=%d", param->audio_stat.state);
     handle_audio_state_change(param->audio_stat.state);
     bt_app_work_dispatch(
       bt_a2d_evt_int_codec_hdl, event, param, sizeof(esp_a2d_cb_param_t), NULL
@@ -148,6 +170,7 @@ void bt_app_a2d_cb(esp_a2d_cb_event_t event, esp_a2d_cb_param_t *param)
   case ESP_A2D_AUDIO_CFG_EVT:
   case ESP_A2D_SEP_REG_STATE_EVT:
   {
+    ESP_LOGI("BT_AV", "A2DP audio config / SEP registration event: %d", event);
     bt_app_work_dispatch(
       bt_a2d_evt_int_codec_hdl, event, param, sizeof(esp_a2d_cb_param_t), NULL
     );
