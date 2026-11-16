@@ -1,20 +1,14 @@
-#include <stdio.h>
-#include <string.h>
-
 #include "esp_log.h"
 
 #include "nvs.h"
 #include "nvs_flash.h"
 #include "esp_system.h"
 
-#include "esp_attr.h"
 #include "driver/gpio.h"
 #include "driver/rtc_io.h"
 #include "esp_sleep.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
-#include "freertos/semphr.h"
-#include "freertos/timers.h"
 
 #include "core/core.h"
 
@@ -24,12 +18,18 @@
 
 #include "pins/pins.h"
 #include "power/power.h"
+#include "logger/logger.h"
+#include "app_log.h"
 #include "buttons.h"
 
 static const char *TAG = "MAIN";
 
 void app_main(void)
 {
+  const logger_api_t *logger_api = debug_uart_logger_get_api();
+  logger_handle_t logger = logger_api->init();
+  app_log_init(logger_api, logger);
+
   ESP_LOGI(TAG, "Starting bluetooth_receiver application");
 
   ESP_LOGI(TAG, "Initializing NVS flash");

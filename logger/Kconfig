@@ -1,0 +1,21 @@
+menu "UART Logger Configuration"
+    config UART_LOGGER_UART_NUM
+        int "UART Port Number"
+        range 0 2
+        default 1
+        help
+            UART peripheral number used to transmit logs to esp-logger.
+
+    config UART_LOGGER_UART_TX_GPIO
+        int "UART TX GPIO Pin"
+        range 0 39
+        default 17
+        help
+            GPIO pin used for UART TX to esp-logger RX.
+
+    config UART_LOGGER_UART_BAUD_RATE
+        int "UART Baud Rate"
+        default 921600
+        help
+            Baud rate for UART log transmission (must match esp-logger).
+endmenu

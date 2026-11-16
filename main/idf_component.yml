@@ -8,3 +8,5 @@ dependencies:
     path: ../pins
   power:
     path: ../power
+  logger:
+    path: ../logger

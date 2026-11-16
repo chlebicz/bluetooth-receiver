@@ -91,11 +91,18 @@ dependencies:
       path: screen
       type: local
     version: '*'
+  uart_logger:
+    dependencies: []
+    source:
+      path: uart_logger
+      type: local
+    version: '*'
 direct_dependencies:
 - core
 - pins
 - power
 - screen
-manifest_hash: 316ee52611738c2102cce9d094887ef5b1d65aa08c19c7db09275a463a8aff70
+- uart_logger
+manifest_hash: a93f5a11a81f23f6270dbf3e251fd43c3d2a1fc9ec05635d69525ac7ccf7cee4
 target: esp32
 version: 3.0.0

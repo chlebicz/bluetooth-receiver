@@ -1,5 +1,5 @@
 idf_component_register(
-  SRCS "src/main.c" "src/buttons.c" "src/app_screen.c"
+  SRCS "src/main.c" "src/buttons.c" "src/app_screen.c" "src/app_log.c"
   PRIV_REQUIRES
     driver
     esp_driver_gpio

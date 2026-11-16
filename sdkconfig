@@ -3327,6 +3327,17 @@ CONFIG_CU_DIAGNOSTICS_COLOR_ALWAYS=y
 # default:
 # CONFIG_CU_GCC_STRING_1BYTE_ALIGN is not set
 # end of CMake Utilities
+
+#
+# UART Logger Configuration
+#
+# default:
+CONFIG_UART_LOGGER_UART_NUM=1
+# default:
+CONFIG_UART_LOGGER_UART_TX_GPIO=17
+# default:
+CONFIG_UART_LOGGER_UART_BAUD_RATE=921600
+# end of UART Logger Configuration
 # end of Component config
 
 # default:
