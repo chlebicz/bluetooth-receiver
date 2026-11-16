@@ -1,13 +1,13 @@
 #pragma once
 #include "screen/rendering.h"
 
-typedef struct display_handle display_handle_t;
+typedef struct display_handle *display_handle_t;
 
-display_handle_t *display_init(void);
+display_handle_t display_init(void);
 
-void display_start(display_handle_t *hdl);
+void display_start(display_handle_t hdl);
 
-void display_sleep(display_handle_t *hdl);
+void display_sleep(display_handle_t hdl);
 
 typedef struct {
   typeof(display_init)         *display_init;

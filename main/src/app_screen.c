@@ -10,7 +10,7 @@
 typedef struct
 {
   const core_api_t    *core_api;
-  display_handle_t    *display;
+  display_handle_t    display;
   const display_api_t *display_api;
 } app_screen_handle_t;
 
@@ -87,7 +87,7 @@ static void app_screen_handle_trackinfoupdate(trackinfoupdate_t update, void *da
 void app_screen_init(
   const core_api_t *core_api,
   const display_api_t *display_api,
-  display_handle_t *display_handle
+  display_handle_t display_handle
 )
 {
   app_screen_handle_t *hdl = malloc(sizeof(app_screen_handle_t));

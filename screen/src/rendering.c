@@ -95,7 +95,7 @@ static inline void draw_zoomed_char(
 }
 
 void draw_char(
-  display_handle_t *hdl,
+  display_handle_t hdl,
   uint8_t c,
   int x,
   int y,
@@ -136,7 +136,7 @@ void draw_char(
 }
 
 void draw_horizontal_text(
-  display_handle_t *hdl,
+  display_handle_t hdl,
   const char* str,
   int length,
   int x,
@@ -197,7 +197,7 @@ static uint16_t* prepare_band_buffer(int width, int height, uint16_t bg_color)
 }
 
 void draw_text_band(
-  display_handle_t *hdl,
+  display_handle_t hdl,
   const char* str,
   int length,
   int scroll_x,
@@ -239,7 +239,7 @@ void draw_text_band(
   esp_lcd_panel_draw_bitmap(panel, 0, y, band_width, y + band_height, band_buffer);
 }
 
-void clear_screen(display_handle_t *hdl, uint16_t color)
+void clear_screen(display_handle_t hdl, uint16_t color)
 {
   esp_lcd_panel_handle_t panel = hdl->panel_handle;
 

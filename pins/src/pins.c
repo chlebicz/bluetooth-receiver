@@ -36,7 +36,7 @@
 typedef struct
 {
   gpio_num_t     pin_num;
-  pins_handle_t *hdl;
+  pins_handle_t hdl;
 } isr_data_t;
 
 struct pins_handle
@@ -46,7 +46,7 @@ struct pins_handle
   isr_data_t isr_data[PINS_MAX_INPUT_PINS];
 };
 
-static pins_input_pin_t *get_pin(pins_handle_t *hdl, gpio_num_t pin_num)
+static pins_input_pin_t *get_pin(pins_handle_t hdl, gpio_num_t pin_num)
 {
   for (int i = 0; i < PINS_MAX_INPUT_PINS; ++i)
   {
@@ -58,7 +58,7 @@ static pins_input_pin_t *get_pin(pins_handle_t *hdl, gpio_num_t pin_num)
   return NULL;
 }
 
-static void handle_button_press(pins_handle_t *hdl, gpio_num_t incoming_pin)
+static void handle_button_press(pins_handle_t hdl, gpio_num_t incoming_pin)
 {
   pins_input_pin_t *pin = get_pin(hdl, incoming_pin);
   if (unlikely(pin == NULL))
@@ -71,7 +71,7 @@ static void handle_button_press(pins_handle_t *hdl, gpio_num_t incoming_pin)
 
 static void pins_task_cb(void* arg)
 {
-  pins_handle_t *hdl = arg;
+  pins_handle_t hdl = arg;
 
   while (1)
   {
@@ -87,7 +87,7 @@ static void IRAM_ATTR button_isr_handler(void *arg)
 {
   isr_data_t *data = (isr_data_t *)arg;
   gpio_num_t pin_num = data->pin_num;
-  pins_handle_t *hdl = data->hdl;
+  pins_handle_t hdl = data->hdl;
 
   BaseType_t xHigherPriorityTaskWoken = pdFALSE;
 
@@ -98,7 +98,7 @@ static void IRAM_ATTR button_isr_handler(void *arg)
   }
 }
 
-void pins_setup_input_pin(pins_handle_t *hdl, pins_input_pin_t *pin)
+void pins_setup_input_pin(pins_handle_t hdl, pins_input_pin_t *pin)
 {
 
   gpio_config_t button_cfg = {
@@ -133,7 +133,7 @@ void pins_setup_input_pin(pins_handle_t *hdl, pins_input_pin_t *pin)
   gpio_isr_handler_add(pin->gpio_pin_num, button_isr_handler, &hdl->isr_data[free_idx]);
 }
 
-void pins_setup_input_pins(pins_handle_t *hdl, size_t length, pins_input_pin_t *pins)
+void pins_setup_input_pins(pins_handle_t hdl, size_t length, pins_input_pin_t *pins)
 {
   for (size_t i = 0; i < length; ++i)
   {
@@ -141,7 +141,7 @@ void pins_setup_input_pins(pins_handle_t *hdl, size_t length, pins_input_pin_t *
   }
 }
 
-void pins_remove_input_pin(pins_handle_t *hdl, gpio_num_t pin_num)
+void pins_remove_input_pin(pins_handle_t hdl, gpio_num_t pin_num)
 {
   for (int i = 0; i < PINS_MAX_INPUT_PINS; ++i)
   {
@@ -154,7 +154,7 @@ void pins_remove_input_pin(pins_handle_t *hdl, gpio_num_t pin_num)
   }
 }
 
-void pins_remove_input_pins(pins_handle_t *hdl, size_t length, gpio_num_t *pin_nums)
+void pins_remove_input_pins(pins_handle_t hdl, size_t length, gpio_num_t *pin_nums)
 {
   for (size_t i = 0; i < length; ++i)
   {
@@ -162,7 +162,7 @@ void pins_remove_input_pins(pins_handle_t *hdl, size_t length, gpio_num_t *pin_n
   }
 }
 
-void pins_remove_all_input_pins(pins_handle_t *hdl)
+void pins_remove_all_input_pins(pins_handle_t hdl)
 {
   for (int i = 0; i < PINS_MAX_INPUT_PINS; ++i)
   {
@@ -176,9 +176,9 @@ void pins_remove_all_input_pins(pins_handle_t *hdl)
 
 #define GPIO_EVT_QUEUE_SIZE 10
 
-pins_handle_t *pins_init()
+pins_handle_t pins_init()
 {
-  pins_handle_t *hdl = malloc(sizeof(pins_handle_t));
+  pins_handle_t hdl = malloc(sizeof(struct pins_handle));
 
   esp_err_t err = gpio_install_isr_service(0);
   if (err != ESP_OK && err != ESP_ERR_INVALID_STATE) {
@@ -223,7 +223,7 @@ const pins_api_t *pins_get_api(void)
   return &api;
 }
 
-void pins_destroy(pins_handle_t *hdl)
+void pins_destroy(pins_handle_t hdl)
 {
   pins_remove_all_input_pins(hdl);
   free(hdl);

@@ -40,17 +40,17 @@ void app_main(void)
   core_api->init();
 
   const display_api_t *display_api = get_display_api();
-  display_handle_t *lcd = display_api->display_init();
+  display_handle_t lcd = display_api->display_init();
   display_api->clear_screen(lcd, COLOR_BLACK);
 
   const power_api_t *power_api = power_get_api();
-  power_handle_t *power = power_api->init(core_api, display_api, lcd);
+  power_handle_t power = power_api->init(core_api, display_api, lcd);
   power_api->power_on(power);
 
   app_screen_init(core_api, display_api, lcd);
 
   const pins_api_t *pins_api = pins_get_api();
-  pins_handle_t *pins = pins_api->init();
+  pins_handle_t pins = pins_api->init();
 
   app_buttons_init(core_api, pins_api, power_api, power, pins);
 

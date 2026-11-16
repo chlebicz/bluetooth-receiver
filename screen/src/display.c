@@ -34,9 +34,9 @@ const display_api_t *get_display_api(void)
   return &api;
 }
 
-display_handle_t *display_init(void)
+display_handle_t display_init(void)
 {
-  display_handle_t *hdl = malloc(sizeof(display_handle_t));
+  display_handle_t hdl = malloc(sizeof(struct display_handle));
   esp_lcd_panel_handle_t panel_handle = NULL;
 
   ESP_LOGI(TAG, "Initialize SPI bus");
@@ -100,14 +100,14 @@ display_handle_t *display_init(void)
   return hdl;
 }
 
-void display_start(display_handle_t *hdl)
+void display_start(display_handle_t hdl)
 {
   ESP_ERROR_CHECK(esp_lcd_panel_io_tx_param(hdl->io_handle, 0x11, NULL, 0)); // Sleep Out
   // vTaskDelay(pdMS_TO_TICKS(120));
   gpio_set_level(PIN_NUM_LED, 1);
 }
 
-void display_sleep(display_handle_t *hdl)
+void display_sleep(display_handle_t hdl)
 {
   gpio_set_level(PIN_NUM_LED, 0);
   ESP_ERROR_CHECK(esp_lcd_panel_io_tx_param(hdl->io_handle, 0x10, NULL, 0)); // Sleep In

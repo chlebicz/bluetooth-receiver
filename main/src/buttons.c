@@ -9,7 +9,7 @@ typedef struct
 {
   const core_api_t  *core_api;
   const power_api_t *power_api;
-  power_handle_t    *power;
+  power_handle_t    power;
 } app_buttons_handle_t;
 
 static void handle_power_button_press(void *args)
@@ -28,8 +28,8 @@ void app_buttons_init(
   const core_api_t *core_api,
   const pins_api_t *pins_api,
   const power_api_t *power_api,
-  power_handle_t *power,
-  pins_handle_t *pins
+  power_handle_t power,
+  pins_handle_t pins
 )
 {
   app_buttons_handle_t *hdl = malloc(sizeof(app_buttons_handle_t));

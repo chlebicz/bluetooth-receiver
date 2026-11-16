@@ -18,12 +18,12 @@
 #define LCD_H_RES CONFIG_SCREEN_LCD_H_RES
 #define LCD_V_RES CONFIG_SCREEN_LCD_V_RES
 
-typedef struct display_handle display_handle_t;
+typedef struct display_handle *display_handle_t;
 
-void clear_screen(display_handle_t *hdl, uint16_t color);
+void clear_screen(display_handle_t hdl, uint16_t color);
 
 void draw_char(
-  display_handle_t *hdl,
+  display_handle_t hdl,
   uint8_t c,
   int x,
   int y,
@@ -33,7 +33,7 @@ void draw_char(
 );
 
 void draw_horizontal_text(
-  display_handle_t *hdl,
+  display_handle_t hdl,
   const char* str,
   int length,
   int x,
@@ -44,7 +44,7 @@ void draw_horizontal_text(
 );
 
 void draw_text_band(
-  display_handle_t *hdl,
+  display_handle_t hdl,
   const char* str,
   int length,
   int x,
